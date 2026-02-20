@@ -4,728 +4,687 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pugiy</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Syne+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
-    --black: #080808;
-    --charcoal: #111111;
-    --mid: #1a1a1a;
-    --accent: #c8a96e;
-    --accent2: #e8c98e;
+    --black: #060606;
+    --charcoal: #111;
+    --mid: #181818;
+    --gold: #c8a96e;
+    --gold2: #e8c98e;
+    --gold3: #f5e0b0;
     --white: #f0ede6;
-    --muted: #888;
+    --muted: #555;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
   body {
-    min-height: 100vh;
     background: var(--black);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'DM Mono', monospace;
+    font-family: 'Syne Mono', monospace;
     overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 100vh;
+    padding: 40px 16px;
+    cursor: none;
     position: relative;
   }
 
-  /* Animated grain texture */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
-    opacity: 0.4;
-    pointer-events: none;
-    z-index: 0;
-    animation: grain 0.5s steps(1) infinite;
+  /* Grain texture */
+  body::after {
+    content:'';
+    position:fixed; inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:9990; opacity:0.5;
+    animation:grain 0.4s steps(1) infinite;
   }
-
   @keyframes grain {
-    0%, 100% { transform: translate(0,0); }
-    10% { transform: translate(-2%, -3%); }
-    20% { transform: translate(2%, 1%); }
-    30% { transform: translate(-1%, 2%); }
-    40% { transform: translate(3%, -1%); }
-    50% { transform: translate(-2%, 3%); }
-    60% { transform: translate(1%, -2%); }
-    70% { transform: translate(2%, 2%); }
-    80% { transform: translate(-3%, 1%); }
-    90% { transform: translate(1%, 3%); }
+    0%{transform:translate(0,0)} 20%{transform:translate(-2%,-3%)}
+    40%{transform:translate(2%,1%)} 60%{transform:translate(-1%,3%)}
+    80%{transform:translate(3%,-1%)} 100%{transform:translate(-2%,2%)}
   }
 
-  /* Floating cat paws bg */
-  .bg-paws {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-  }
-  .paw {
-    position: absolute;
-    font-size: 1.2rem;
-    opacity: 0.04;
-    animation: float linear infinite;
-  }
+  /* BG Canvas */
+  #bgCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
 
-  @keyframes float {
-    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.04; }
-    90% { opacity: 0.04; }
-    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  /* Nebula glow bg */
+  body::before {
+    content:'';
+    position:fixed; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:600px; height:400px;
+    background:radial-gradient(ellipse, rgba(200,169,110,0.04) 0%, rgba(200,169,110,0.02) 40%, transparent 70%);
+    pointer-events:none; z-index:0;
+    animation:nebulaPulse 10s ease-in-out infinite;
+  }
+  @keyframes nebulaPulse {
+    0%,100%{opacity:0.5;transform:translate(-50%,-50%) scale(1)}
+    50%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}
   }
 
-  .card {
-    position: relative;
-    z-index: 1;
-    width: 380px;
-    max-width: 95vw;
-    padding: 40px 32px 36px;
-    background: var(--charcoal);
-    border: 1px solid #252525;
-    border-radius: 4px;
-    animation: cardIn 0.8s cubic-bezier(0.16,1,0.3,1) forwards;
-    opacity: 0;
-    transform: translateY(30px);
-    box-shadow: 0 0 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04);
+  /* Custom cursor */
+  .cursor { position:fixed; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); mix-blend-mode:difference; }
+  .cursor-ring { position:fixed; width:28px; height:28px; border:1px solid rgba(200,169,110,0.4); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.15s ease; }
+
+  /* Floating particles */
+  .particles { position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+  .p-item { position:absolute; border-radius:50%; animation:particleFloat linear infinite; opacity:0; }
+  @keyframes particleFloat {
+    0%{transform:translateY(100vh) scale(0) rotate(0deg);opacity:0}
+    5%{opacity:1}
+    95%{opacity:0.5}
+    100%{transform:translateY(-10vh) scale(1) rotate(180deg);opacity:0}
   }
 
-  @keyframes cardIn {
-    to { opacity: 1; transform: translateY(0); }
-  }
+  /* Page wrapper */
+  .page-wrapper { display:flex; justify-content:center; align-items:flex-start; min-height:calc(100vh - 80px); position:relative; z-index:2; }
 
-  /* Top accent line */
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 10%; right: 10%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  }
-
-  /* Cat ears decoration */
-  .cat-ears {
-    position: absolute;
-    top: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 140px;
-  }
-  .ear {
-    width: 0;
-    height: 0;
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-bottom: 22px solid var(--charcoal);
-    position: relative;
-  }
-  .ear::before {
-    content: '';
-    position: absolute;
-    top: 4px; left: -8px;
-    width: 0; height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 16px solid var(--accent);
-    opacity: 0.5;
-  }
-
-  /* Profile photo */
-  .avatar-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-
-  .avatar-ring {
-    position: relative;
-    width: 96px; height: 96px;
-  }
-
-  .avatar-ring::before {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    background: conic-gradient(var(--accent), #3a3a3a, var(--accent2), #3a3a3a, var(--accent));
-    animation: spin 4s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .avatar-ring::after {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: 50%;
-    background: var(--charcoal);
-    z-index: 1;
-  }
-
-  .avatar {
-    position: relative;
-    z-index: 2;
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    background: var(--mid);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.8rem;
-    overflow: hidden;
-  }
-
-  /* Username */
-  .username {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--white);
-    text-align: center;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
-  }
-
-  .username span {
-    color: var(--accent);
-  }
-
-  .tag {
-    font-size: 0.65rem;
-    color: var(--muted);
-    text-align: center;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  /* Description */
-  .desc {
-    font-size: 0.78rem;
-    color: #666;
-    text-align: center;
-    line-height: 1.7;
-    margin-bottom: 28px;
-    padding: 0 8px;
-    border-top: 1px solid #1e1e1e;
-    border-bottom: 1px solid #1e1e1e;
-    padding: 14px 8px;
-  }
-
-  .desc em {
-    color: var(--accent);
-    font-style: normal;
-  }
-
-  /* Buttons */
-  .links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 18px;
-    background: var(--mid);
-    border: 1px solid #252525;
-    border-radius: 3px;
-    color: var(--white);
-    text-decoration: none;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
-    transition: all 0.25s ease;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-  }
-
-  .btn::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 2px;
-    background: var(--accent);
-    transform: scaleY(0);
-    transition: transform 0.25s ease;
-  }
-
-  .btn:hover {
-    background: #202020;
-    border-color: #333;
-    transform: translateX(4px);
-    color: var(--accent2);
-  }
-
-  .btn:hover::before { transform: scaleY(1); }
-
-  .btn-icon {
-    font-size: 1.1rem;
-    width: 22px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-
-  .btn-label { flex: 1; }
-
-  .btn-arrow {
-    font-size: 0.7rem;
-    color: var(--muted);
-    transition: transform 0.25s;
-  }
-  .btn:hover .btn-arrow { transform: translateX(3px); color: var(--accent); }
-
-  .btn-discord:hover {
-    border-color: rgba(88,101,242,0.4);
-    box-shadow: 0 4px 16px rgba(88,101,242,0.12);
-  }
-  .btn-donate:hover {
-    border-color: rgba(255,140,0,0.4);
-    box-shadow: 0 4px 16px rgba(255,140,0,0.1);
-  }
-
-  /* TikTok icon color */
-  .tiktok-icon { color: #fff; }
-
-  /* Music Player */
-  .music-player {
-    margin-top: 20px;
-    background: #0f0f0f;
-    border: 1px solid #222;
-    border-radius: 3px;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-
-  .music-play-btn {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.2s;
-    color: #000;
-    font-size: 0.75rem;
-  }
-
-  .music-play-btn:hover {
-    background: var(--accent2);
-    transform: scale(1.08);
-  }
-
-  .music-info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .music-title {
-    font-size: 0.7rem;
-    color: var(--white);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 4px;
-  }
-
-  .music-bar {
-    height: 3px;
-    background: #222;
-    border-radius: 2px;
-    overflow: hidden;
-    cursor: pointer;
-    position: relative;
-  }
-
-  .music-progress {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 2px;
-    width: 0%;
-    transition: width 0.5s linear;
-  }
-
-  .music-time {
-    font-size: 0.58rem;
-    color: var(--muted);
-    margin-top: 3px;
-    letter-spacing: 1px;
-  }
-
-  .music-vol {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-  }
-
-  .vol-icon { font-size: 0.75rem; color: var(--muted); }
-
-  .vol-slider {
-    -webkit-appearance: none;
-    width: 50px;
-    height: 3px;
-    background: #333;
-    border-radius: 2px;
-    outline: none;
-  }
-
-  .vol-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-  }
-
-  /* Equalizer animation */
-  .eq {
-    display: flex;
-    align-items: flex-end;
-    gap: 2px;
-    height: 14px;
-    flex-shrink: 0;
-  }
-
-  .eq-bar {
-    width: 3px;
-    background: var(--accent);
-    border-radius: 1px;
-    animation: eqAnim ease-in-out infinite;
-    opacity: 0.4;
-  }
-
-  .eq-bar.playing { opacity: 1; }
-
-  @keyframes eqAnim {
-    0%, 100% { height: 3px; }
-    50% { height: 14px; }
-  }
-
-  /* Footer */
-  .footer {
-    margin-top: 16px;
-    text-align: center;
-    font-size: 0.6rem;
-    color: #333;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  .paw-trail {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    font-size: 0.7rem;
-    opacity: 0.3;
-  }
-
-  /* Splash Screen */
+  /* ── SPLASH ─────────────────────────────────── */
   .splash {
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    background: #080808;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
+    position:fixed; inset:0; z-index:999; background:#040404;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    cursor:none; transition:opacity 1s cubic-bezier(0.4,0,0.2,1), visibility 1s;
+    overflow:hidden;
+  }
+  .splash.hide { opacity:0; visibility:hidden; pointer-events:none; }
+
+  /* Scan lines on splash */
+  .splash-lines { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .splash-line {
+    position:absolute; width:1px; top:0; bottom:0;
+    background:linear-gradient(180deg,transparent,rgba(200,169,110,0.12),transparent);
+    animation:lineSweep linear infinite; opacity:0;
+  }
+  @keyframes lineSweep {
+    0%{transform:translateX(-200px) skewX(-15deg);opacity:0}
+    10%{opacity:1} 90%{opacity:0.8}
+    100%{transform:translateX(calc(100vw + 200px)) skewX(-15deg);opacity:0}
   }
 
-  .splash.hide {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
+  /* Splash canvas */
+  #splashCanvas { position:absolute; inset:0; pointer-events:none; z-index:0; }
+
+  /* Cat silhouette glow */
+  .splash-cat-glow {
+    position:absolute;
+    width:300px; height:300px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(200,169,110,0.06) 0%, transparent 70%);
+    animation:catGlowPulse 4s ease-in-out infinite;
+  }
+  @keyframes catGlowPulse {
+    0%,100%{transform:scale(1);opacity:0.5}
+    50%{transform:scale(1.4);opacity:1}
   }
 
-  .splash-cat {
-    font-size: 4rem;
-    animation: splashBounce 1.5s ease-in-out infinite;
-    margin-bottom: 20px;
-    filter: drop-shadow(0 0 20px rgba(200,169,110,0.5));
+  .splash-eye {
+    font-size:5.5rem; margin-bottom:20px; position:relative; z-index:1;
+    animation:eyeGlow 3s ease-in-out infinite;
   }
-
-  @keyframes splashBounce {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-12px) scale(1.05); }
+  @keyframes eyeGlow {
+    0%,100%{filter:drop-shadow(0 0 20px rgba(200,169,110,0.4)) drop-shadow(0 0 40px rgba(200,169,110,0.2));transform:scale(1) rotate(-3deg)}
+    50%{filter:drop-shadow(0 0 50px rgba(200,169,110,0.9)) drop-shadow(0 0 90px rgba(200,169,110,0.4));transform:scale(1.08) rotate(3deg)}
   }
 
   .splash-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.8rem;
-    font-weight: 900;
-    color: #f0ede6;
-    letter-spacing: -1px;
-    margin-bottom: 8px;
+    font-family:'Cormorant Garamond',serif; font-size:4.8rem; font-weight:700;
+    color:var(--white); letter-spacing:12px; margin-bottom:6px;
+    position:relative; z-index:1;
+    animation:namePulse 5s ease-in-out infinite;
   }
-
-  .splash-name span { color: #c8a96e; }
+  .splash-name .g { color:var(--gold); text-shadow:0 0 20px rgba(200,169,110,0.5); }
+  @keyframes namePulse {
+    0%,100%{letter-spacing:12px}
+    50%{letter-spacing:14px}
+  }
 
   .splash-sub {
-    font-size: 0.65rem;
-    color: #555;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin-bottom: 48px;
-    font-family: 'DM Mono', monospace;
+    font-size:0.58rem; color:#3a3a3a; letter-spacing:6px; text-transform:uppercase;
+    margin-bottom:56px; position:relative; z-index:1;
+    animation:subPulse 3s ease-in-out infinite;
   }
+  @keyframes subPulse { 0%,100%{opacity:0.4} 50%{opacity:1;color:#666} }
 
   .splash-btn {
-    position: relative;
-    padding: 14px 40px;
-    background: transparent;
-    border: 1px solid #c8a96e;
-    color: #c8a96e;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s;
-    overflow: hidden;
+    position:relative; z-index:1;
+    padding:14px 52px; background:transparent;
+    border:1px solid var(--gold); color:var(--gold);
+    font-family:'Syne Mono',monospace; font-size:0.7rem;
+    letter-spacing:5px; text-transform:uppercase;
+    cursor:none; transition:all 0.4s; overflow:hidden;
+    box-shadow:0 0 20px rgba(200,169,110,0.08);
   }
-
   .splash-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: #c8a96e;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s ease;
-    z-index: -1;
+    content:''; position:absolute; inset:0;
+    background:var(--gold); transform:scaleX(0);
+    transform-origin:left; transition:transform 0.4s cubic-bezier(0.4,0,0.2,1); z-index:-1;
   }
-
-  .splash-btn:hover { color: #080808; }
-  .splash-btn:hover::before { transform: scaleX(1); }
+  .splash-btn:hover{color:#000;box-shadow:0 0 40px rgba(200,169,110,0.3)}
+  .splash-btn:hover::before{transform:scaleX(1)}
 
   .splash-hint {
-    margin-top: 16px;
-    font-size: 0.55rem;
-    color: #333;
-    letter-spacing: 2px;
-    font-family: 'DM Mono', monospace;
-    animation: blink 2s ease-in-out infinite;
+    margin-top:16px; font-size:0.5rem; color:#2a2a2a;
+    letter-spacing:3px; position:relative; z-index:1;
+    animation:blink 2.5s ease-in-out infinite;
   }
+  @keyframes blink{0%,100%{opacity:0.3}50%{opacity:0.9}}
 
-  @keyframes blink {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
-  }
-
-  /* Paw prints decoration on splash */
+  /* Paw prints walking on splash */
   .splash-paws {
-    position: absolute;
-    bottom: 30px;
-    display: flex;
-    gap: 8px;
-    opacity: 0.15;
-    font-size: 1rem;
+    position:absolute; bottom:28px; font-size:0.9rem;
+    color:rgba(200,169,110,0.08); letter-spacing:8px;
+    animation:pawsWalk 4s ease-in-out infinite;
+  }
+  @keyframes pawsWalk {
+    0%,100%{opacity:0.08;transform:translateX(-10px)}
+    50%{opacity:0.18;transform:translateX(10px)}
   }
 
+  /* ── CARD ───────────────────────────────────── */
+  .card {
+    position:relative; z-index:1;
+    width:400px; max-width:95vw;
+    background:var(--charcoal);
+    border:1px solid #1e1e1e; border-radius:2px;
+    animation:cardIn 1s cubic-bezier(0.16,1,0.3,1) forwards;
+    opacity:0; transform:translateY(40px) scale(0.97);
+    box-shadow:0 0 0 1px rgba(200,169,110,0.04), 0 60px 120px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.03);
+    overflow:hidden;
+  }
+  @keyframes cardIn{to{opacity:1;transform:translateY(0) scale(1)}}
+
+  /* Gold top line */
+  .card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg,transparent 5%,var(--gold) 30%,var(--gold2) 50%,var(--gold) 70%,transparent 95%);
+    opacity:0.6;
+  }
+  .card::after {
+    content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg,transparent 5%,rgba(200,169,110,0.12) 50%,transparent 95%);
+  }
+
+  /* Corner accents */
+  .corner { position:absolute; width:14px; height:14px; border-color:rgba(200,169,110,0.2); border-style:solid; }
+  .corner-tl{top:8px;left:8px;border-width:1px 0 0 1px}
+  .corner-tr{top:8px;right:8px;border-width:1px 1px 0 0}
+  .corner-bl{bottom:8px;left:8px;border-width:0 0 1px 1px}
+  .corner-br{bottom:8px;right:8px;border-width:0 1px 1px 0}
+
+  /* Cat ears */
+  .cat-ears {
+    position:absolute; top:-20px; left:50%; transform:translateX(-50%);
+    display:flex; gap:165px;
+  }
+  .ear {
+    width:0; height:0;
+    border-left:14px solid transparent; border-right:14px solid transparent;
+    border-bottom:22px solid var(--charcoal); position:relative;
+    filter:drop-shadow(0 -2px 6px rgba(0,0,0,0.8));
+    animation:earTwitch 6s ease-in-out infinite;
+  }
+  .ear:first-child { animation-delay: -2s; }
+  @keyframes earTwitch {
+    0%,85%,100%{transform:scaleX(1)}
+    90%{transform:scaleX(1.15) translateX(-2px)}
+    95%{transform:scaleX(0.95)}
+  }
+  .ear::before {
+    content:''; position:absolute; top:5px; left:-9px;
+    width:0; height:0;
+    border-left:9px solid transparent; border-right:9px solid transparent;
+    border-bottom:15px solid rgba(200,169,110,0.25);
+  }
+
+  .card-body { padding:44px 32px 36px; }
+
+  /* Avatar */
+  .avatar-wrapper { display:flex; justify-content:center; margin-bottom:24px; }
+  .avatar-outer { position:relative; width:100px; height:100px; }
+
+  .avatar-ring-spin {
+    position:absolute; inset:-3px; border-radius:50%;
+    background:conic-gradient(
+      var(--gold) 0deg,
+      #2a2a2a 50deg,
+      var(--gold2) 120deg,
+      #1a1a1a 170deg,
+      var(--gold3) 240deg,
+      #222 300deg,
+      var(--gold) 360deg
+    );
+    animation:spinRing 5s linear infinite;
+  }
+  @keyframes spinRing{to{transform:rotate(360deg)}}
+
+  .avatar-ring-bg { position:absolute; inset:1px; border-radius:50%; background:var(--charcoal); z-index:1; }
+  .avatar-img { position:absolute; inset:5px; border-radius:50%; overflow:hidden; z-index:2; background:var(--mid); }
+  .avatar-img img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+  /* Orbiting paw particles */
+  .paw-particle {
+    position:absolute; top:50%; left:50%;
+    font-size:0.5rem;
+    animation:pawOrbit linear infinite;
+    z-index:3; transform-origin:0 0;
+    opacity:0.4;
+  }
+  @keyframes pawOrbit {
+    0%   { transform:rotate(0deg)   translateX(58px) rotate(0deg);   opacity:0.5; }
+    25%  { transform:rotate(90deg)  translateX(58px) rotate(-90deg);  opacity:0.2; }
+    50%  { transform:rotate(180deg) translateX(58px) rotate(-180deg); opacity:0.5; }
+    75%  { transform:rotate(270deg) translateX(58px) rotate(-270deg); opacity:0.2; }
+    100% { transform:rotate(360deg) translateX(58px) rotate(-360deg); opacity:0.5; }
+  }
+
+  .avatar-glow {
+    position:absolute; bottom:-10px; left:50%;
+    transform:translateX(-50%);
+    width:80px; height:20px;
+    background:radial-gradient(ellipse,rgba(200,169,110,0.35),transparent 70%);
+    border-radius:50%; animation:glowPulse 4s ease-in-out infinite; z-index:0;
+  }
+  @keyframes glowPulse{0%,100%{opacity:0.4;transform:translateX(-50%) scaleX(1)}50%{opacity:1;transform:translateX(-50%) scaleX(1.5)}}
+
+  /* Username */
+  .username {
+    font-family:'Cormorant Garamond',serif; font-size:2.6rem; font-weight:700;
+    color:var(--white); text-align:center; letter-spacing:3px; margin-bottom:4px; line-height:1;
+  }
+  .username .g { color:var(--gold); text-shadow:0 0 15px rgba(200,169,110,0.4); }
+
+  .tag { font-size:0.58rem; color:var(--muted); text-align:center; letter-spacing:4px; text-transform:uppercase; margin-bottom:20px; }
+
+  /* Divider */
+  .divider { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .divider-line { flex:1; height:1px; background:linear-gradient(90deg,transparent,#222); }
+  .divider-line.r { background:linear-gradient(90deg,#222,transparent); }
+  .divider-dot { color:rgba(200,169,110,0.4); font-size:0.7rem; animation:dotPulse 3s ease-in-out infinite; }
+  @keyframes dotPulse{0%,100%{opacity:0.4}50%{opacity:1;color:rgba(200,169,110,0.8)}}
+
+  /* Desc */
+  .desc {
+    font-size:0.75rem; color:#555; text-align:center; line-height:1.8;
+    margin-bottom:28px; padding:16px 0;
+    border-top:1px solid #181818; border-bottom:1px solid #181818;
+  }
+  .desc em { color:var(--gold); font-style:normal; }
+
+  /* Buttons */
+  .links { display:flex; flex-direction:column; gap:8px; }
+
+  .btn {
+    display:flex; align-items:center; gap:14px;
+    padding:12px 16px; background:var(--mid);
+    border:1px solid #1e1e1e; border-radius:2px;
+    color:#888; text-decoration:none;
+    font-family:'Syne Mono',monospace; font-size:0.74rem; letter-spacing:0.5px;
+    transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position:relative; overflow:hidden; cursor:none;
+  }
+  .btn::before {
+    content:''; position:absolute; left:0; top:0; bottom:0;
+    width:2px; background:linear-gradient(180deg,var(--gold),var(--gold2));
+    transform:scaleY(0); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .btn::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg,rgba(200,169,110,0.04),transparent);
+    opacity:0; transition:opacity 0.3s;
+  }
+  .btn:hover { background:#1e1e1e; border-color:#2a2a2a; color:var(--gold2); transform:translateX(6px); }
+  .btn:hover::before { transform:scaleY(1); }
+  .btn:hover::after { opacity:1; }
+
+  .btn-discord:hover { border-color:rgba(88,101,242,0.25); color:#8b9fff; }
+  .btn-discord::before { background:linear-gradient(180deg,#5865F2,#8b9fff); }
+
+  .btn-donate:hover { border-color:rgba(255,140,0,0.25); color:#ffb347; }
+  .btn-donate::before { background:linear-gradient(180deg,#ff8c00,#ffb347); }
+
+  .btn-icon { width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .btn-label { flex:1; }
+  .btn-name { display:block; font-size:0.74rem; }
+  .btn-sub { display:block; font-size:0.6rem; color:var(--muted); letter-spacing:1px; margin-top:1px; }
+  .btn-arrow { font-size:0.65rem; color:var(--muted); transition:all 0.3s; flex-shrink:0; }
+  .btn:hover .btn-arrow { transform:translateX(4px); color:var(--gold); }
+
+  /* Music Player */
+  .music-player {
+    margin-top:20px;
+    background:#0e0e0e;
+    border:1px solid #1e1e1e;
+    border-radius:2px; padding:12px 16px;
+    display:flex; align-items:center; gap:12px;
+    position:relative; overflow:hidden;
+  }
+  .music-player::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(200,169,110,0.2),transparent);
+  }
+
+  .music-play-btn {
+    width:34px; height:34px; border-radius:50%;
+    background:linear-gradient(135deg,var(--gold),var(--gold2));
+    border:none; cursor:none;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition:all 0.25s; color:#000; font-size:0.75rem;
+    box-shadow:0 0 14px rgba(200,169,110,0.3);
+  }
+  .music-play-btn:hover { transform:scale(1.1); box-shadow:0 0 24px rgba(200,169,110,0.6); }
+
+  .music-info { flex:1; min-width:0; }
+  .music-title { font-size:0.65rem; color:var(--gold); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:5px; letter-spacing:1px; }
+  .music-bar { height:3px; background:#222; border-radius:2px; overflow:hidden; cursor:pointer; }
+  .music-progress { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold2)); border-radius:2px; width:0%; transition:width 0.5s linear; }
+  .music-time { font-size:0.5rem; color:var(--muted); margin-top:3px; letter-spacing:1px; }
+
+  .eq { display:flex; align-items:flex-end; gap:2px; height:14px; flex-shrink:0; }
+  .eq-bar { width:3px; background:linear-gradient(to top,var(--gold),var(--gold2)); border-radius:1px; height:3px; opacity:0.3; }
+  .eq-bar.playing { opacity:1; animation:eqBounce ease-in-out infinite; }
+  @keyframes eqBounce { 0%,100%{height:3px} 50%{height:14px} }
+
+  .music-vol { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+  .vol-icon { font-size:0.7rem; color:var(--muted); }
+  .vol-slider { -webkit-appearance:none; width:46px; height:3px; background:#333; border-radius:2px; outline:none; }
+  .vol-slider::-webkit-slider-thumb { -webkit-appearance:none; width:10px; height:10px; border-radius:50%; background:var(--gold); cursor:pointer; box-shadow:0 0 6px rgba(200,169,110,0.5); }
+
+  /* Footer */
+  .footer { margin-top:28px; text-align:center; font-size:0.55rem; color:#2a2a2a; letter-spacing:3px; text-transform:uppercase; }
+  .paw-trail { display:flex; justify-content:center; gap:5px; margin-bottom:6px; font-size:0.65rem; }
+  .paw-trail span { opacity:0; animation:pawAppear ease-in-out infinite; }
+  @keyframes pawAppear { 0%,100%{opacity:0.05} 50%{opacity:0.2} }
 </style>
 </head>
 <body>
 
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
 
+<!-- BG CANVAS -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- PARTICLES -->
+<div class="particles" id="particles"></div>
+
+<!-- SPLASH -->
 <div class="splash" id="splash" onclick="enterSite()">
-  <div class="splash-cat">🐱</div>
-  <div class="splash-name">Pu<span>gi</span>y</div>
+  <div class="splash-lines" id="splashLines"></div>
+  <canvas id="splashCanvas"></canvas>
+  <div class="splash-cat-glow"></div>
+  <div class="splash-eye">🐱</div>
+  <div class="splash-name">PU<span class="g">GI</span>Y</div>
   <div class="splash-sub">✦ black cat zone ✦</div>
   <button class="splash-btn" onclick="enterSite()">Masuk 🐾</button>
   <div class="splash-hint">klik di mana saja untuk masuk</div>
   <div class="splash-paws">🐾 🐾 🐾 🐾 🐾 🐾 🐾</div>
 </div>
 
-<div class="bg-paws" id="bgPaws"></div>
+<div class="page-wrapper">
+  <div class="card">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <div class="cat-ears"><div class="ear"></div><div class="ear"></div></div>
 
-<div class="card">
-  <div class="cat-ears">
-    <div class="ear"></div>
-    <div class="ear"></div>
-  </div>
-
-  <div class="avatar-wrapper">
-    <div class="avatar-ring">
-      <div class="avatar"><img src="https://api.dicebear.com/7.x/adventurer/svg?seed=pugiy&backgroundColor=1a1a1a" alt="Pugiy" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"></div>
-    </div>
-  </div>
-
-  <div class="username">Pu<span>gi</span>y</div>
-  <div class="tag">✦ streamer · content creator ✦</div>
-
-  <div class="desc">
-    just a person likes to laugh, cat, and you 😸<br>
-    <em>join the cat squad 🐾</em>
-  </div>
-
-  <div class="links">
-    <a href="https://www.tiktok.com/@pu91y" class="btn">
-      <span class="btn-icon tiktok-icon">
-        <img src="https://cdn.simpleicons.org/tiktok/ffffff" alt="TikTok" style="width:18px;height:18px;object-fit:contain;">
-      </span>
-      <span class="btn-label">TikTok — @pu91y</span>
-      <span class="btn-arrow">→</span>
-    </a>
-
-    <a href="https://www.tiktok.com/@pu9iy" class="btn">
-        <span class="btn-icon tiktok-icon">
-          <img src="https://cdn.simpleicons.org/tiktok/ffffff" alt="TikTok" style="width:18px;height:18px;object-fit:contain;">
-        </span>
-        <span class="btn-label">TikTok — @pu9iy</span>
-        <span class="btn-arrow">→</span>
-      </a>
-
-    <a href="https://discord.com/invite/aNEPByX52P" class="btn">
-      <span class="btn-icon">
-        <img src="https://cdn.simpleicons.org/discord/5865F2" alt="Discord" style="width:18px;height:18px;object-fit:contain;">
-      </span>
-      <span class="btn-label">Discord — Miaw World</span>
-      <span class="btn-arrow">→</span>
-    </a>
-
-    <a href="https://discord.gg/Gc8mhCyjHb" class="btn">
-        <span class="btn-icon">
-          <img src="https://cdn.simpleicons.org/discord/5865F2" alt="Discord" style="width:18px;height:18px;object-fit:contain;">
-        </span>
-        <span class="btn-label">Discord — Ruang Merenung</span>
-        <span class="btn-arrow">→</span>
-      </a>
-
-    <a href="https://sociabuzz.com/pugiy" class="btn btn-donate">
-      <span class="btn-icon">
-        <img src="https://cdn.simpleicons.org/bitcoin/ff8b1f" alt="SociaBuzz" style="width:18px;height:18px;object-fit:contain;border-radius:3px;">
-      </span>
-      <span class="btn-label">SociaBuzz — Support</span>
-      <span class="btn-arrow">→</span>
-    </a>
-  </div>
-
-  <!-- Music Player -->
-  <div class="music-player">
-    <button class="music-play-btn" id="playBtn" onclick="togglePlay()">▶</button>
-    <div class="music-info">
-      <div class="music-title">🎵 now playing...</div>
-      <div class="music-bar" id="musicBar" onclick="seekTo(event,this)">
-        <div class="music-progress" id="progress"></div>
+    <div class="card-body">
+      <div class="avatar-wrapper">
+        <div class="avatar-outer">
+          <div class="avatar-ring-spin"></div>
+          <div class="avatar-ring-bg"></div>
+          <div class="avatar-img">
+            <img src="https://i.ibb.co.com/60jnMXxn/075f974fd3bcd8a7d93345514bfeae3f-tplv-tiktokx-cropcenter-168-168.jpg" alt="Pugiy">
+          </div>
+          <div class="avatar-glow"></div>
+          <!-- Orbiting paw particles -->
+          <div class="paw-particle" style="animation-duration:4s;margin:-6px 0 0 -6px;">🐾</div>
+          <div class="paw-particle" style="animation-duration:4s;animation-delay:-1.33s;margin:-6px 0 0 -6px;">✦</div>
+          <div class="paw-particle" style="animation-duration:4s;animation-delay:-2.66s;margin:-6px 0 0 -6px;">🐾</div>
+        </div>
       </div>
-      <div class="music-time" id="timeDisplay">0:00 / 0:00</div>
-    </div>
-    <div class="eq">
-      <div class="eq-bar" id="eq1" style="animation-duration:0.6s;height:4px;"></div>
-      <div class="eq-bar" id="eq2" style="animation-duration:0.4s;animation-delay:0.1s;height:4px;"></div>
-      <div class="eq-bar" id="eq3" style="animation-duration:0.5s;animation-delay:0.2s;height:4px;"></div>
-      <div class="eq-bar" id="eq4" style="animation-duration:0.7s;animation-delay:0.05s;height:4px;"></div>
-    </div>
-    <div class="music-vol">
-      <span class="vol-icon">🔊</span>
-      <input class="vol-slider" type="range" min="0" max="1" step="0.05" value="0.5" oninput="setVolume(this.value)">
-    </div>
-  </div>
 
-  <audio id="bgAudio" loop autoplay>
-    <source src="https://raw.githubusercontent.com/VaelHae/Backsound/main/2021-02-23_-_Fantasy_Ambience_-_David_Fesliyan.mp3" type="audio/mpeg">
-  </audio>
+      <div class="username">PU<span class="g">GI</span>Y</div>
+      <div class="tag">✦ streamer · content creator ✦</div>
 
-  <div class="footer">
-    <div class="paw-trail">🐾 🐾 🐾 🐾 🐾</div>
-    pugiy © 2025
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-dot">🐾</span>
+        <div class="divider-line r"></div>
+      </div>
+
+      <div class="desc">
+        just a person likes to laugh, cat, and you 😸<br>
+        <em>join the cat squad 🐾</em>
+      </div>
+
+      <div class="links">
+        <a href="https://www.tiktok.com/@pu91y" class="btn">
+          <span class="btn-icon"><img src="https://cdn.simpleicons.org/tiktok/ffffff" alt="TikTok" style="width:15px;height:15px;object-fit:contain;"></span>
+          <span class="btn-label"><span class="btn-name">TikTok</span><span class="btn-sub">@pu91y</span></span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="https://www.tiktok.com/@pu9iy" class="btn">
+          <span class="btn-icon"><img src="https://cdn.simpleicons.org/tiktok/ffffff" alt="TikTok" style="width:15px;height:15px;object-fit:contain;"></span>
+          <span class="btn-label"><span class="btn-name">TikTok</span><span class="btn-sub">@pu9iy</span></span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="https://discord.com/invite/aNEPByX52P" class="btn btn-discord">
+          <span class="btn-icon"><img src="https://cdn.simpleicons.org/discord/5865F2" alt="Discord" style="width:15px;height:15px;object-fit:contain;"></span>
+          <span class="btn-label"><span class="btn-name">Discord</span><span class="btn-sub">Miaw World</span></span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="https://discord.gg/Gc8mhCyjHb" class="btn btn-discord">
+          <span class="btn-icon"><img src="https://cdn.simpleicons.org/discord/5865F2" alt="Discord" style="width:15px;height:15px;object-fit:contain;"></span>
+          <span class="btn-label"><span class="btn-name">Discord</span><span class="btn-sub">Ruang Merenung</span></span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="https://sociabuzz.com/pugiy" class="btn btn-donate">
+          <span class="btn-icon"><img src="https://cdn.simpleicons.org/kofi/ff5e5b" alt="SociaBuzz" style="width:15px;height:15px;object-fit:contain;"></span>
+          <span class="btn-label"><span class="btn-name">SociaBuzz</span><span class="btn-sub">Support Pugiy ☕</span></span>
+          <span class="btn-arrow">→</span>
+        </a>
+      </div>
+
+      <div class="music-player">
+        <button class="music-play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+        <div class="music-info">
+          <div class="music-title">🎵 now playing...</div>
+          <div class="music-bar" id="musicBar" onclick="seekTo(event,this)">
+            <div class="music-progress" id="progress"></div>
+          </div>
+          <div class="music-time" id="timeDisplay">0:00 / 0:00</div>
+        </div>
+        <div class="eq">
+          <div class="eq-bar" style="animation-duration:0.6s;"></div>
+          <div class="eq-bar" style="animation-duration:0.4s;animation-delay:0.1s;"></div>
+          <div class="eq-bar" style="animation-duration:0.5s;animation-delay:0.2s;"></div>
+          <div class="eq-bar" style="animation-duration:0.7s;animation-delay:0.05s;"></div>
+        </div>
+        <div class="music-vol">
+          <span class="vol-icon">🔊</span>
+          <input class="vol-slider" type="range" min="0" max="1" step="0.05" value="0.5" oninput="setVolume(this.value)">
+        </div>
+      </div>
+
+      <audio id="bgAudio" loop>
+        <source src="https://raw.githubusercontent.com/VaelHae/Backsound/main/2021-02-23_-_Fantasy_Ambience_-_David_Fesliyan.mp3" type="audio/mpeg">
+      </audio>
+
+      <div class="footer">
+        <div class="paw-trail">
+          <span style="animation-duration:2.1s;animation-delay:0s;">🐾</span>
+          <span style="animation-duration:2.1s;animation-delay:0.3s;">🐾</span>
+          <span style="animation-duration:2.1s;animation-delay:0.6s;">🐾</span>
+          <span style="animation-duration:2.1s;animation-delay:0.9s;">🐾</span>
+          <span style="animation-duration:2.1s;animation-delay:1.2s;">🐾</span>
+        </div>
+        Copyright By VaelHae © 2026
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
+// ── CURSOR ─────────────────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+});
+(function animRing(){
+  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+  cursorRing.style.left=rx+'px'; cursorRing.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+})();
+document.querySelectorAll('.btn,.splash-btn,.music-play-btn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ cursorRing.style.transform='translate(-50%,-50%) scale(2)'; cursorRing.style.borderColor='rgba(200,169,110,0.6)'; });
+  el.addEventListener('mouseleave',()=>{ cursorRing.style.transform='translate(-50%,-50%) scale(1)'; cursorRing.style.borderColor='rgba(200,169,110,0.4)'; });
+});
 
-  
-  // Music player
-  const audio = document.getElementById('bgAudio');
-  audio.volume = 0.5;
-  let playing = false;
+// ── SPLASH CANVAS — floating gold dust particles ────────────────────────
+const splashCanvas = document.getElementById('splashCanvas');
+splashCanvas.style.position = 'absolute';
+splashCanvas.style.inset = '0';
+splashCanvas.style.pointerEvents = 'none';
+splashCanvas.style.zIndex = '0';
+const sCtx = splashCanvas.getContext('2d');
 
-  // Try autoplay
-  window.addEventListener('load', () => {
-    audio.play().then(() => {
-      playing = true;
-      document.getElementById('playBtn').textContent = '⏸';
-      document.querySelectorAll('.eq-bar').forEach(b => b.classList.add('playing'));
-    }).catch(() => {
-      // Autoplay blocked, wait for user click
-    });
+function resizeSplash() {
+  splashCanvas.width = window.innerWidth;
+  splashCanvas.height = window.innerHeight;
+}
+resizeSplash();
+
+// Gold dust particles on splash
+const dust = Array.from({length: 120}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  r: 0.5 + Math.random() * 1.5,
+  alpha: Math.random() * 0.6,
+  dir: Math.random() > 0.5 ? 1 : -1,
+  speed: 0.003 + Math.random() * 0.007,
+  drift: (Math.random() - 0.5) * 0.3,
+  vy: -0.1 - Math.random() * 0.2
+}));
+
+// Paw print positions on splash
+const splashPawPrints = Array.from({length: 8}, (_, i) => ({
+  x: 80 + (i % 4) * (window.innerWidth / 4),
+  y: 60 + Math.floor(i / 4) * (window.innerHeight * 0.7),
+  alpha: 0,
+  dir: 1,
+  speed: 0.004 + Math.random() * 0.006,
+  size: 12 + Math.random() * 8
+}));
+
+function drawSplash() {
+  sCtx.clearRect(0, 0, splashCanvas.width, splashCanvas.height);
+
+  // Gold dust
+  dust.forEach(d => {
+    d.alpha += d.dir * d.speed;
+    if (d.alpha > 0.6 || d.alpha < 0.02) d.dir *= -1;
+    d.x += d.drift;
+    d.y += d.vy;
+    if (d.y < -5) { d.y = splashCanvas.height + 5; d.x = Math.random() * splashCanvas.width; }
+    sCtx.beginPath();
+    sCtx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+    sCtx.fillStyle = `rgba(200,169,110,${d.alpha})`;
+    sCtx.fill();
   });
 
-  function togglePlay() {
-    if (playing) {
-      audio.pause();
-      document.getElementById('playBtn').textContent = '▶';
-      document.querySelectorAll('.eq-bar').forEach(b => b.classList.remove('playing'));
-    } else {
-      audio.play();
-      document.getElementById('playBtn').textContent = '⏸';
-      document.querySelectorAll('.eq-bar').forEach(b => b.classList.add('playing'));
-    }
-    playing = !playing;
-  }
+  requestAnimationFrame(drawSplash);
+}
+drawSplash();
 
-  function setVolume(v) { audio.volume = parseFloat(v); }
+// ── BG CANVAS — rising gold motes ──────────────────────────────────────
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+function resizeBg() { bgCanvas.width=window.innerWidth; bgCanvas.height=window.innerHeight; }
+resizeBg();
+window.addEventListener('resize', () => { resizeSplash(); resizeBg(); });
 
-  function formatTime(s) {
-    if (isNaN(s)) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return m + ':' + (sec < 10 ? '0' : '') + sec;
-  }
+const motes = Array.from({length: 80}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  r: 0.5 + Math.random() * 1.2,
+  alpha: Math.random() * 0.3,
+  dir: Math.random() > 0.5 ? 1 : -1,
+  speed: 0.002 + Math.random() * 0.005,
+  vy: -0.08 - Math.random() * 0.15,
+  drift: (Math.random() - 0.5) * 0.2
+}));
 
-  audio.addEventListener('timeupdate', () => {
-    if (!audio.duration) return;
-    const pct = (audio.currentTime / audio.duration) * 100;
-    const prog = document.getElementById('progress');
-    if (prog) prog.style.width = pct + '%';
-    const disp = document.getElementById('timeDisplay');
-    if (disp) disp.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+function drawBg() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  motes.forEach(m => {
+    m.alpha += m.dir * m.speed;
+    if (m.alpha > 0.3 || m.alpha < 0.02) m.dir *= -1;
+    m.y += m.vy; m.x += m.drift;
+    if (m.y < -5) { m.y = bgCanvas.height + 5; m.x = Math.random() * bgCanvas.width; }
+    bgCtx.beginPath();
+    bgCtx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+    bgCtx.fillStyle = `rgba(200,169,110,${m.alpha})`;
+    bgCtx.fill();
   });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
 
-  function seekTo(e, el) {
-    const rect = el.getBoundingClientRect();
-    audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-  }
+// ── SPLASH LINES ───────────────────────────────────────────────────────
+const splashLines = document.getElementById('splashLines');
+for(let i=0;i<8;i++){
+  const l=document.createElement('div'); l.className='splash-line';
+  l.style.cssText=`left:${10+Math.random()*80}%;animation-duration:${7+Math.random()*10}s;animation-delay:${Math.random()*10}s;`;
+  splashLines.appendChild(l);
+}
 
-  
-  function enterSite() {
-    document.getElementById('splash').classList.add('hide');
-    const audio = document.getElementById('bgAudio');
-    audio.play().then(() => {
-      playing = true;
-      document.getElementById('playBtn').textContent = '⏸';
-      document.querySelectorAll('.eq-bar').forEach(b => b.classList.add('playing'));
-    }).catch(e => console.log(e));
+// ── FLOATING PARTICLES ─────────────────────────────────────────────────
+const particlesEl = document.getElementById('particles');
+const syms = ['🐾','✦','◆','·','꩜'];
+for(let i=0;i<24;i++){
+  const p=document.createElement('div'); p.className='p-item';
+  if(Math.random()>0.4){
+    p.style.cssText=`left:${Math.random()*100}%;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;background:rgba(200,169,110,${0.06+Math.random()*0.15});animation-duration:${18+Math.random()*22}s;animation-delay:${Math.random()*20}s;box-shadow:0 0 4px rgba(200,169,110,0.2);`;
+  } else {
+    p.textContent=syms[Math.floor(Math.random()*syms.length)];
+    p.style.cssText=`left:${Math.random()*100}%;font-size:${0.5+Math.random()*0.8}rem;color:rgba(200,169,110,0.04);animation-duration:${20+Math.random()*20}s;animation-delay:${Math.random()*20}s;border-radius:0;width:auto;height:auto;`;
   }
+  particlesEl.appendChild(p);
+}
 
-  // Generate floating paws
-  const paws = ['🐾','🐱','✦','◆'];
-  const bg = document.getElementById('bgPaws');
-  for (let i = 0; i < 18; i++) {
-    const el = document.createElement('span');
-    el.className = 'paw';
-    el.textContent = paws[Math.floor(Math.random() * paws.length)];
-    el.style.left = Math.random() * 100 + '%';
-    el.style.animationDuration = (12 + Math.random() * 20) + 's';
-    el.style.animationDelay = (Math.random() * 20) + 's';
-    el.style.fontSize = (0.8 + Math.random() * 1.2) + 'rem';
-    bg.appendChild(el);
-  }
+// ── MUSIC PLAYER ───────────────────────────────────────────────────────
+const audio=document.getElementById('bgAudio');
+audio.volume=0.5;
+let playing=false;
+
+function togglePlay(){
+  if(playing){ audio.pause(); document.getElementById('playBtn').textContent='▶'; document.querySelectorAll('.eq-bar').forEach(b=>b.classList.remove('playing')); }
+  else { audio.play(); document.getElementById('playBtn').textContent='⏸'; document.querySelectorAll('.eq-bar').forEach(b=>b.classList.add('playing')); }
+  playing=!playing;
+}
+function setVolume(v){ audio.volume=parseFloat(v); }
+function formatTime(s){ if(isNaN(s))return'0:00'; const m=Math.floor(s/60),sec=Math.floor(s%60); return m+':'+(sec<10?'0':'')+sec; }
+audio.addEventListener('timeupdate',()=>{
+  if(!audio.duration)return;
+  const p=document.getElementById('progress'); if(p)p.style.width=(audio.currentTime/audio.duration*100)+'%';
+  const d=document.getElementById('timeDisplay'); if(d)d.textContent=formatTime(audio.currentTime)+' / '+formatTime(audio.duration);
+});
+function seekTo(e,el){ const r=el.getBoundingClientRect(); audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration; }
+
+// ── SPLASH ENTER ───────────────────────────────────────────────────────
+function enterSite(){
+  document.getElementById('splash').classList.add('hide');
+  audio.play().then(()=>{
+    playing=true;
+    document.getElementById('playBtn').textContent='⏸';
+    document.querySelectorAll('.eq-bar').forEach(b=>b.classList.add('playing'));
+  }).catch(e=>console.log(e));
+}
 </script>
 </body>
 </html>
